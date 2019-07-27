@@ -1,2 +1,6 @@
 Notes.txt
 *.pyc
+.vscode/
+*.template
+*.json
+*.scratch

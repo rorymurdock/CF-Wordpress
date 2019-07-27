@@ -16,3 +16,9 @@ install:
 script:
   - python -m pytest Tests/ --cov=./ -v
   - python deploy.py -env $env
+
+# deploy:
+#   - provider: script
+#     script: bash deploy.sh
+#     on:
+#       branch: develop
