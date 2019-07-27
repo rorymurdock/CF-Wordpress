@@ -1,6 +1,6 @@
 branches:
   except:
-  - /^development.*$/
+  - /^development/i
 
 language: python
 python:
