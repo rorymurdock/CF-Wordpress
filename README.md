@@ -10,7 +10,7 @@ Setup AWSCLI config:
 ```
 aws configure set profile.testing.aws_access_key_id
 aws configure set profile.testing.aws_secret_access_key
-aws configure set profile.testing.region eu-west-1
+aws configure set profile.testing.region ap-southeast-2
 aws configure set profile.testing.output json
 ```
 
