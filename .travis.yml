@@ -5,8 +5,10 @@ python:
 # command to install dependencies
 install:
   - python -m pip install -r requirements.txt
+  - python -m pip install pytest-cov coveralls
   - export AWS_DEFAULT_REGION=ap-southeast-2
 
 # command to run tests
 script:
-  - python deploy.py
+  - python -m pytest Tests/ --cov=./ -v
+  - python deploy.py -env $env
