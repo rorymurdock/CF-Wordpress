@@ -30,12 +30,20 @@ def debug_print(message):
         print(message)
 
 class wordpress():
-    def __init__(self, StackName, Environment):
-        print('Deploying %s to %s environment' % (StackName, Environment))
+    def __init__(self, stackName, environment):
+        if environment not in ['Production', 'Staging']:
+            print('Environment must be Production or Staging')
+            sys.exit(1)
 
-        self.StackName = StackName
-        self.TemplateURL = 'https://s3-eu-west-1.amazonaws.com/cloudformation-templates-eu-west-1/WordPress_Single_Instance.template'
-        self.Environment = Environment
+        print('Deploying %s to %s environment' % (stackName, environment))
+
+        if environment == 'Production':
+            # Using sample URL for testing
+            self.templateURL = 'https://s3-eu-west-1.amazonaws.com/cloudformation-templates-eu-west-1/WordPress_Single_Instance.template'  #TODO Update URLs to correct jsons
+        else:
+            self.templateURL = 'https://s3-eu-west-1.amazonaws.com/cloudformation-templates-eu-west-1/WordPress_Single_Instance.template'
+        self.stackName = stackName
+        self.environment = environment
 
         # Create shared instances of AWS API
         self.ec2 = boto3.client('ec2')
@@ -87,7 +95,7 @@ class wordpress():
         tags_export = []
 
         tags = [
-            ['Env', self.Environment]
+            ['Env', self.environment]
         ]
 
         for tag in tags:
@@ -133,7 +141,7 @@ class wordpress():
         return False
 
     def check_termination_protection(self):
-        stack = self.get_stack(self.StackName)[0]
+        stack = self.get_stack(self.stackName)[0]
         return stack['EnableTerminationProtection']
 
     def delete_stack(self):
