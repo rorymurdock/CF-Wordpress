@@ -157,6 +157,16 @@ class wordpress():
         response = self.cf.delete_stack(StackName='string')
 
         return self.check_response(response)
+        #TODO Add delete checker
+        # waiter = client.get_waiter('stack_delete_complete')
+        # waiter.wait(
+        #     StackName='string',
+        #     NextToken='string',
+        #     WaiterConfig={
+        #         'Delay': 123,
+        #         'MaxAttempts': 123
+        #     }
+        # )
 
     def update_termination_protection(self, enabled: bool):
         response = self.cf.update_termination_protection(
