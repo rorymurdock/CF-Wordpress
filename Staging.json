@@ -101,6 +101,20 @@
     "WPURL" : {
       "Description" : "Wordpress URL",
       "Type": "String"
+    },
+
+    "HostedZone" : {
+      "Description": "The R53 hosted domain name",
+      "Type": "String",
+      "MinLength": "1",
+      "Default": "itmatic.com.au."
+    },
+
+    "HostedZoneName" : {
+      "Description": "Name of the R53 hosted zone",
+      "Type": "String",
+      "MinLength": "1",
+      "Default": "itmatic.com.au."
     }
   },
 
@@ -415,12 +429,36 @@
           "Timeout" : "PT15M"
         }
       }
-    }
-  },
+    },
+
+    "StagingDNS": {
+        "Type": "AWS::Route53::RecordSet",
+        "Properties": {
+          "HostedZoneName": { "Ref": "HostedZoneName" },
+          "Comment": "DNS for staging",
+          "Name" : {
+            "Fn::Join" : [ "", [
+                "staging.",
+                {"Ref" : "HostedZone"} ,"."
+            ] ]
+          },
+          "Type": "A",
+          "TTL": "900",
+          "ResourceRecords" : [
+            { "Fn::GetAtt" : [ "WebServer", "PublicIp" ] }
+          ]
+        }
+      }
+    },
 
   "Outputs" : {
     "WebsiteURL" : {
-      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "WebServer", "PublicDnsName" ]}]]},
+      "Value": {
+        "Fn::Join" : [ "", [
+            "staging.",
+            {"Ref" : "HostedZone"} ,"."
+        ] ]
+      },
       "Description" : "WordPress Website"
     }
   }
