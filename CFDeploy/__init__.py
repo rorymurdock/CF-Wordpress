@@ -64,7 +64,7 @@ class wordpress():
         if StackName:
             stack = self.cf.describe_stacks(StackName=StackName)['Stacks']
         else:
-            stack = self.cf.describe_stacks(StackName=self.StackName)['Stacks']
+            stack = self.cf.describe_stacks(StackName=self.stackName)['Stacks']
         return stack
 
     def return_dict(self, name, key, value):
@@ -87,7 +87,7 @@ class wordpress():
             ['DBPassword', random_password(41)],
             ['DBRootPassword', random_password(41)],
             ['InstanceType', 't1.micro'],
-            ['WPAdminUsername', 'wpadmin'],
+            ['WPAdminUsername', 'wpadmin1'],
             ['WPAdminPassword', random_password(15)],
             ['WPAdminEmail', 'noreply@itmatic.com.au'],
             ['WPURL', 'wp.itmatic.com.au']
@@ -106,8 +106,8 @@ class wordpress():
             tags_export.append(self.return_dict('', tag[0], tag[1]))
 
         response = self.cf.create_stack(
-            StackName=self.StackName,
-            TemplateURL=self.TemplateURL,
+            StackName=self.stackName,
+            TemplateURL=self.templateURL,
             Parameters=parameters_export,
             TimeoutInMinutes=TimeoutInMinutes,
             OnFailure=OnFailure,
@@ -124,7 +124,7 @@ class wordpress():
         waiter = self.cf.get_waiter('stack_create_complete')
 
         waiter.wait(
-            StackName=self.StackName,
+            StackName=self.stackName,
             # NextToken='string',
             WaiterConfig={
                 'Delay': delay,
@@ -139,8 +139,8 @@ class wordpress():
 
     def check_stack_exists(self):
         for stack in self.get_all_stacks():
-            if stack['StackName'] == self.StackName:
-                debug_print('Stack %s exists' % self.StackName)
+            if stack['StackName'] == self.stackName:
+                debug_print('Stack %s exists' % self.stackName)
                 return True
         return False
 
@@ -154,7 +154,7 @@ class wordpress():
             sys.exit(1)
         elif self.check_termination_protection() and overrideTerminationProtection:
             if self.update_termination_protection(False):
-                print('Removed termination protection from %s' % self.StackName)
+                print('Removed termination protection from %s' % self.stackName)
                 print('Waiting for Stack to update')
                 while self.check_termination_protection:
                     # FIX: Never seems to update status
@@ -165,7 +165,7 @@ class wordpress():
                 print('Remove protection and try again')
                 sys.exit(1)
 
-        print('Deleting stack %s' % self.StackName)
+        print('Deleting stack %s' % self.stackName)
         response = self.cf.delete_stack(StackName='string')
 
         return self.check_response(response)
@@ -182,7 +182,7 @@ class wordpress():
 
     def update_termination_protection(self, enabled: bool):
         response = self.cf.update_termination_protection(
-            StackName=self.StackName,
+            StackName=self.stackName,
             EnableTerminationProtection=enabled
         )
 
