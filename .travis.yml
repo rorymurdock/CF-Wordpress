@@ -1,3 +1,7 @@
+branches:
+  except:
+  - /^(?i:development)-.*$/
+
 language: python
 python:
   - "3.6"
@@ -12,3 +16,9 @@ install:
 script:
   - python -m pytest Tests/ --cov=./ -v
   - python deploy.py -env $env
+
+# deploy:
+#   - provider: script
+#     script: bash deploy.sh
+#     on:
+#       branch: develop
