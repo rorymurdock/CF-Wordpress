@@ -41,7 +41,7 @@ class wordpress():
             # Using sample URL for testing
             self.templateURL = 'https://s3-eu-west-1.amazonaws.com/cloudformation-templates-eu-west-1/WordPress_Single_Instance.template'  #TODO Update URLs to correct jsons
         else:
-            self.templateURL = 'https://s3-eu-west-1.amazonaws.com/cloudformation-templates-eu-west-1/WordPress_Single_Instance.template'
+            self.templateURL = 'https://cfwordpress.s3-ap-southeast-2.amazonaws.com/Staging.json'
         self.stackName = stackName
         self.environment = environment
 
@@ -86,7 +86,11 @@ class wordpress():
             ['DBUser', random_string(16)],
             ['DBPassword', random_password(41)],
             ['DBRootPassword', random_password(41)],
-            ['InstanceType', 't1.micro']
+            ['InstanceType', 't1.micro'],
+            ['WPAdminUsername', 'wpadmin'],
+            ['WPAdminPassword', random_password(15)],
+            ['WPAdminEmail', 'noreply@itmatic.com.au'],
+            ['WPURL', 'wp.itmatic.com.au']
         ]
 
         for parameter in parameters:
