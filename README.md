@@ -33,8 +33,8 @@ sudo apt-get install awscli -y
 Setup AWSCLI config:
 
 ```shell
-aws configure set profile.default.aws_access_key_id AKIAQDSWL6XCW2JU67UW
-aws configure set profile.default.aws_secret_access_key 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
+aws configure set profile.default.aws_access_key_id <aws_access_key_id>
+aws configure set profile.default.aws_secret_access_key <aws_secret_access_key>
 aws configure set profile.default.region ap-southeast-2
 aws configure set profile.default.output json
 ```
