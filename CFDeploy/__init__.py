@@ -1,3 +1,4 @@
+"""Deploy CloudFormation in AWS"""
 import sys
 import time
 import string
@@ -15,22 +16,37 @@ overrideTerminationProtection = True
 
 def random_string(length=15):
     """Generate a random string of fixed length """
-    return ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase) for i in range(length))
+    return ''.join(
+        random.choice(
+            string.ascii_lowercase + string.ascii_uppercase)
+        for i in range(length)
+    )
 
 def random_id(length=8):
     """Generate a random string of fixed length """
-    return ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(length))
+    return ''.join(
+        random.choice(
+            string.ascii_uppercase + string.digits)
+        for i in range(length)
+    )
 
 def random_password(length=15):
     """Generate a random string of fixed length """
-    return ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for i in range(length))
+    return ''.join(
+        random.choice(
+            string.ascii_lowercase + string.ascii_uppercase + string.digits)
+        for i in range(length)
+    )
 
 def debug_print(message):
+    """If debugging enabled, print message"""
     if debug:
         print(message)
 
 class AWS():
+    """Deploy to AWS using CloudFormation"""
     def __init__(self, stackName, environment):
+        """init"""
         if environment not in ['Production', 'Staging']:
             print('Environment must be Production or Staging')
             sys.exit(1)
@@ -39,7 +55,7 @@ class AWS():
 
         if environment == 'Production':
             # Using sample URL for testing
-            self.templateURL = 'https://s3-eu-west-1.amazonaws.com/cloudformation-templates-eu-west-1/WordPress_Single_Instance.template'  #TODO Update URLs to correct jsons
+            self.templateURL = ''  #TODO Update URLs to correct jsons
         else:
             self.templateURL = 'https://cfwordpress.s3-ap-southeast-2.amazonaws.com/Staging.json'
         self.stackName = stackName
@@ -50,23 +66,25 @@ class AWS():
         self.cf = boto3.client('cloudformation')
 
     def get_ec2_regions(self):
+        """Returns a list of all regions"""
         response = self.ec2.describe_regions()
-        print('Regions:')
 
-        for region in response['Regions']:
-            print(region['RegionName'])
+        return response['Regions']
 
     def get_all_stacks(self):
+        """Returns a list of all stacks"""
         stacks = self.cf.describe_stacks()['Stacks']
         return stacks
 
     def get_stack(self, StackName=None):
+        """Gets a stacks details by name"""
         if StackName is None:
             StackName = self.stackName
 
         return self.cf.describe_stacks(StackName=StackName)['Stacks']
 
     def return_dict(self, name, key, value):
+        """Creates a dict given a name, key, and value"""
         parameter = {}
         parameter['%sKey' % name] = key
         parameter['%sValue' % name] = value
@@ -74,6 +92,7 @@ class AWS():
         return parameter
 
     def create_stack(self):
+        """Create a CF Stack"""
         parameters_export = []
         parameters = [
             ['KeyName', KeyPair],
@@ -112,7 +131,8 @@ class AWS():
             print('Job submitted')
             return True
 
-    def check_stack_created(self, delay=10, maxAttempts=10):
+    def check_stack_created(self, delay=10, max_attempts=10):
+        """Check and wait for a stack to be created, returns bool"""
         print('Waiting for Stack to be created')
         waiter = self.cf.get_waiter('stack_create_complete')
 
@@ -121,7 +141,7 @@ class AWS():
             # NextToken='string',
             WaiterConfig={
                 'Delay': delay,
-                'MaxAttempts': maxAttempts
+                'MaxAttempts': max_attempts
             }
         )
 
@@ -131,6 +151,7 @@ class AWS():
             return True
 
     def check_stack_exists(self):
+        """Checks for a stack name conflict"""
         for stack in self.get_all_stacks():
             if stack['StackName'] == self.stackName:
                 debug_print('Stack %s exists' % self.stackName)
@@ -138,10 +159,12 @@ class AWS():
         return False
 
     def check_termination_protection(self):
+        """Checks if a stack has termination protection enabled"""
         stack = self.get_stack(self.stackName)[0]
         return stack['EnableTerminationProtection']
 
     def delete_stack(self):
+        """Deletes a stack"""
         if self.check_termination_protection() and not overrideTerminationProtection:
             print('Error: Termination protection is enabled')
             sys.exit(1)
@@ -162,6 +185,7 @@ class AWS():
         response = self.cf.delete_stack(StackName='string')
 
         return self.check_response(response)
+
         #TODO Add delete checker
         # waiter = client.get_waiter('stack_delete_complete')
         # waiter.wait(
@@ -174,6 +198,7 @@ class AWS():
         # )
 
     def update_termination_protection(self, enabled: bool):
+        """Add or remove termination protection"""
         response = self.cf.update_termination_protection(
             StackName=self.stackName,
             EnableTerminationProtection=enabled
@@ -182,22 +207,13 @@ class AWS():
         return self.check_response(response)
 
     def get_output_url(self):
+        """Gets the output URL"""
         for output in self.get_stack()[0]['Outputs']:
             if output['OutputKey'] == 'WebsiteURL':
                 return output['OutputValue']
 
     def check_response(self, response):
+        """Checks if the response is 200 OK"""
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return True
         return False
-
-
-    # Functions to remove
-    #TODO Remove
-    def print_stacks(self):
-        for stack in self.get_all_stacks():
-            print(stack)
-            print('Name: %s' % stack['StackName'])
-            print('Created: %s' % stack['CreationTime'])
-            print('Status: %s' % stack['StackStatus'])
-            print()
