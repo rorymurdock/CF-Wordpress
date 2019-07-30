@@ -51,6 +51,8 @@ Deploy your wordpress instance
 python3 deploy.py -env {Staging|Production}
 ````
 
+The stack will create a security group with port 80 open and 22 open to the IP range you specify. It will output the URL which will be <rand>.staging.itmatic.com.au (or your domain)
+
 Extra resources
 
 [List of AWS regions](https://docs.aws.amazon.com/general/latest/gr/rande.html)
