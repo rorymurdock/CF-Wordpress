@@ -439,7 +439,7 @@
           "Name" : {
             "Fn::Join" : [ "", [
                 "staging.",
-                {"Ref" : "HostedZone"} ,"."
+                {"Ref" : "HostedZone"}
             ] ]
           },
           "Type": "A",
