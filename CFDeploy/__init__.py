@@ -29,7 +29,7 @@ def debug_print(message):
     if debug:
         print(message)
 
-class wordpress():
+class AWS():
     def __init__(self, stackName, environment):
         if environment not in ['Production', 'Staging']:
             print('Environment must be Production or Staging')
@@ -61,11 +61,10 @@ class wordpress():
         return stacks
 
     def get_stack(self, StackName=None):
-        if StackName:
-            stack = self.cf.describe_stacks(StackName=StackName)['Stacks']
-        else:
-            stack = self.cf.describe_stacks(StackName=self.stackName)['Stacks']
-        return stack
+        if StackName is None:
+            StackName = self.stackName
+
+        return self.cf.describe_stacks(StackName=StackName)['Stacks']
 
     def return_dict(self, name, key, value):
         parameter = {}
@@ -73,11 +72,6 @@ class wordpress():
         parameter['%sValue' % name] = value
 
         return parameter
-
-    def generate_cf_template(self):
-        payload = None
-
-        return payload
 
     def create_stack(self):
         parameters_export = []
@@ -89,8 +83,7 @@ class wordpress():
             ['InstanceType', 't1.micro'],
             ['WPAdminUsername', 'wpadmin1'],
             ['WPAdminPassword', random_password(15)],
-            ['WPAdminEmail', 'noreply@itmatic.com.au'],
-            ['WPURL', 'wp.itmatic.com.au']
+            ['WPAdminEmail', 'noreply@itmatic.com.au']
         ]
 
         for parameter in parameters:
