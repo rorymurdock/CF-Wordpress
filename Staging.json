@@ -25,7 +25,6 @@
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
-      "Default": "0.0.0.0/0",
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
@@ -98,9 +97,18 @@
       "ConstraintDescription" : "must contain only alphanumeric characters."
     },
 
-    "WPURL" : {
-      "Description" : "Wordpress URL",
-      "Type": "String"
+    "HostedZone" : {
+      "Description": "The R53 hosted domain name",
+      "Type": "String",
+      "MinLength": "1",
+      "Default": "itmatic.com.au"
+    },
+
+    "HostedZoneName" : {
+      "Description": "Name of the R53 hosted zone",
+      "Type": "String",
+      "MinLength": "1",
+      "Default": "itmatic.com.au"
     }
   },
 
@@ -381,7 +389,7 @@
                 "cwd" : "/tmp/"
               },
               "09_configure_user_url" : {
-                "command" : { "Fn::Join" : ["", ["wp core install --title='Blog Title' --url='", { "Ref" : "WPURL" }, "' --admin_user='", { "Ref" : "WPAdminUsername" }, "' --admin_password='", { "Ref" : "WPAdminPassword" }, "' --admin_email='", { "Ref" : "WPAdminEmail" }, "'"]]},
+                "command" : { "Fn::Join" : ["", ["wp core install --title='Blog Title' --url='", { "Fn::Join" : [ "", [ {"Ref" : "AWS::StackName"}, ".staging.", {"Ref" : "HostedZone"} ] ] }, "' --admin_user='", { "Ref" : "WPAdminUsername" }, "' --admin_password='", { "Ref" : "WPAdminPassword" }, "' --admin_email='", { "Ref" : "WPAdminEmail" }, "'"]]},
                 "cwd" : "/var/www/html/"
               }
             }
@@ -415,12 +423,39 @@
           "Timeout" : "PT15M"
         }
       }
-    }
-  },
+    },
+
+    "StagingDNS": {
+        "Type": "AWS::Route53::RecordSet",
+        "Properties": {
+          "HostedZoneName": { "Fn::Join" : [ "", [ {"Ref" : "HostedZoneName"}, "." ] ] },
+          "Comment": "DNS for staging",
+          "Name" : {
+            "Fn::Join" : [ "", [
+                {"Ref" : "AWS::StackName"},
+                ".staging.",
+                {"Ref" : "HostedZone"},
+                "."
+            ] ]
+          },
+          "Type": "A",
+          "TTL": "900",
+          "ResourceRecords" : [
+            { "Fn::GetAtt" : [ "WebServer", "PublicIp" ] }
+          ]
+        }
+      }
+    },
 
   "Outputs" : {
     "WebsiteURL" : {
-      "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "WebServer", "PublicDnsName" ]}]]},
+      "Value": {
+        "Fn::Join" : [ "", [
+          {"Ref" : "AWS::StackName"},
+          ".staging.",
+          {"Ref" : "HostedZone"}
+        ] ]
+      },
       "Description" : "WordPress Website"
     }
   }
