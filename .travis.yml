@@ -14,8 +14,12 @@ install:
 
 # command to run tests
 script:
-  - python -m pytest Tests/ --cov=./ -v
+  # Test AWS script
+  - python -m pytest Tests/AWS_test.py --cov=./ -v
+  # Deploy Stack
   - python deploy.py -env $env
+  # Run website testse
+  - python -m pytest Tests/Wordpress_test.py
 
 # deploy:
 #   - provider: script
