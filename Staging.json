@@ -98,23 +98,18 @@
       "ConstraintDescription" : "must contain only alphanumeric characters."
     },
 
-    "WPURL" : {
-      "Description" : "Wordpress URL",
-      "Type": "String"
-    },
-
     "HostedZone" : {
       "Description": "The R53 hosted domain name",
       "Type": "String",
       "MinLength": "1",
-      "Default": "itmatic.com.au."
+      "Default": "itmatic.com.au"
     },
 
     "HostedZoneName" : {
       "Description": "Name of the R53 hosted zone",
       "Type": "String",
       "MinLength": "1",
-      "Default": "itmatic.com.au."
+      "Default": "itmatic.com.au"
     }
   },
 
@@ -395,7 +390,7 @@
                 "cwd" : "/tmp/"
               },
               "09_configure_user_url" : {
-                "command" : { "Fn::Join" : ["", ["wp core install --title='Blog Title' --url='", { "Ref" : "WPURL" }, "' --admin_user='", { "Ref" : "WPAdminUsername" }, "' --admin_password='", { "Ref" : "WPAdminPassword" }, "' --admin_email='", { "Ref" : "WPAdminEmail" }, "'"]]},
+                "command" : { "Fn::Join" : ["", ["wp core install --title='Blog Title' --url='", { "Fn::Join" : [ "", [ {"Ref" : "AWS::StackName"}, ".staging.", {"Ref" : "HostedZone"} ] ] }, "' --admin_user='", { "Ref" : "WPAdminUsername" }, "' --admin_password='", { "Ref" : "WPAdminPassword" }, "' --admin_email='", { "Ref" : "WPAdminEmail" }, "'"]]},
                 "cwd" : "/var/www/html/"
               }
             }
@@ -434,12 +429,14 @@
     "StagingDNS": {
         "Type": "AWS::Route53::RecordSet",
         "Properties": {
-          "HostedZoneName": { "Ref": "HostedZoneName" },
+          "HostedZoneName": { "Fn::Join" : [ "", [ {"Ref" : "HostedZoneName"}, "." ] ] },
           "Comment": "DNS for staging",
           "Name" : {
             "Fn::Join" : [ "", [
-                "staging.",
-                {"Ref" : "HostedZone"}
+                {"Ref" : "AWS::StackName"},
+                ".staging.",
+                {"Ref" : "HostedZone"},
+                "."
             ] ]
           },
           "Type": "A",
@@ -455,8 +452,9 @@
     "WebsiteURL" : {
       "Value": {
         "Fn::Join" : [ "", [
-            "staging.",
-            {"Ref" : "HostedZone"} ,"."
+          {"Ref" : "AWS::StackName"},
+          ".staging.",
+          {"Ref" : "HostedZone"}
         ] ]
       },
       "Description" : "WordPress Website"
